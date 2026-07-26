@@ -30,6 +30,16 @@ describe('handleActivity', () => {
         value: { action: 'pickRepo', cwd: 'C:/r/alpha', name: 'alpha' } }, d);
     expect(JSON.stringify(out)).toMatch(/Started session in .*alpha/);
   });
+  it('refuses a pickRepo submit whose cwd is not a scanned repo', async () => {
+    const d = deps();
+    let called = false;
+    d.manager.handlePrompt = async () => { called = true; return { sessionId: 's', text: 'ok' }; };
+    const out = await handleActivity(
+      { text: '', conversationId: 't1', sender: { upn: 'a@m.com' },
+        value: { action: 'pickRepo', cwd: 'C:/evil/path', name: 'evil' } }, d);
+    expect(called).toBe(false);
+    expect(JSON.stringify(out)).toMatch(/not available/i);
+  });
   it('ignores an empty/whitespace prompt on an active thread', async () => {
     const store = new SessionStore(':memory:');
     store.upsert('t1', 'sess-1', 'C:/r/alpha');

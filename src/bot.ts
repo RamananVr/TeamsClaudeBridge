@@ -26,8 +26,13 @@ export async function handleActivity(a: IncomingActivity, d: BotDeps): Promise<R
 
   // Adaptive-card submit (repo selection)
   if (a.value?.action === 'pickRepo') {
-    await d.manager.handlePrompt(a.conversationId, 'Session started. What should I work on?', a.value.cwd);
-    return [{ text: `Started session in \`${a.value.name}\`. Send your next message to continue.` }];
+    const repos = d.scanRepos();
+    const chosen = repos.find(r => r.path === a.value.cwd);
+    if (!chosen) {
+      return [{ text: 'That repo is not available. Send /repos to pick from the current list.' }];
+    }
+    await d.manager.handlePrompt(a.conversationId, 'Session started. What should I work on?', chosen.path);
+    return [{ text: `Started session in \`${chosen.name}\`. Send your next message to continue.` }];
   }
 
   const cmd = parseCommand(a.text ?? '');
