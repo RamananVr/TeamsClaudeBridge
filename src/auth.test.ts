@@ -7,4 +7,6 @@ describe('isAuthorized', () => {
   it('allows by AAD id', () => expect(isAuthorized({ aadObjectId: 'aad-id-123' }, allowed)).toBe(true));
   it('denies unknown', () => expect(isAuthorized({ upn: 'x@m.com' }, allowed)).toBe(false));
   it('denies when no identifiers', () => expect(isAuthorized({}, allowed)).toBe(false));
+  it('denies empty-string identifiers', () => expect(isAuthorized({ upn: '', aadObjectId: '' }, allowed)).toBe(false));
+  it('denies unknown AAD id', () => expect(isAuthorized({ aadObjectId: 'nope' }, allowed)).toBe(false));
 });
