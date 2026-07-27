@@ -1,0 +1,42 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "{{MICROSOFT_APP_ID}}",
+  "packageName": "com.example.teamsclaudebridge",
+  "developer": {
+    "name": "Teams Claude Bridge",
+    "websiteUrl": "https://example.com",
+    "privacyUrl": "https://example.com/privacy",
+    "termsOfUseUrl": "https://example.com/terms"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "Claude Code Bridge",
+    "full": "Teams to Claude Code Bridge"
+  },
+  "description": {
+    "short": "Relay Teams messages to Claude Code sessions on your devbox.",
+    "full": "A personal bridge that relays Microsoft Teams messages to Claude Code sessions running against real local git repositories on your devbox. Each Teams thread maps to one Claude Code session so you can drive coding work from Teams. The bot connects outbound through Azure Bot Service, so your devbox needs no permanent public inbound port."
+  },
+  "accentColor": "#2A2A2A",
+  "bots": [
+    {
+      "botId": "{{MICROSOFT_APP_ID}}",
+      "scopes": [
+        "personal",
+        "team"
+      ],
+      "supportsFiles": false,
+      "isNotificationOnly": false
+    }
+  ],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": []
+}
