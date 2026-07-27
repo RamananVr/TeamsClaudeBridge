@@ -31,6 +31,7 @@ export async function handleActivity(a: IncomingActivity, d: BotDeps): Promise<R
     if (!chosen) {
       return [{ text: 'That repo is not available. Send /repos to pick from the current list.' }];
     }
+    d.manager.end(a.conversationId); // force a fresh session in the chosen repo
     await d.manager.handlePrompt(a.conversationId, 'Session started. What should I work on?', chosen.path);
     return [{ text: `Started session in \`${chosen.name}\`. Send your next message to continue.` }];
   }

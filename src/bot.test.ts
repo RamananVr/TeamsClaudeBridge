@@ -30,6 +30,20 @@ describe('handleActivity', () => {
         value: { action: 'pickRepo', cwd: 'C:/r/alpha', name: 'alpha' } }, d);
     expect(JSON.stringify(out)).toMatch(/Started session in .*alpha/);
   });
+  it('forces a fresh session on pickRepo by ending any existing one first', async () => {
+    const calls: string[] = [];
+    const d = deps({
+      manager: {
+        handlePrompt: async () => { calls.push('handlePrompt'); return { sessionId: 's', text: 'ok' }; },
+        end: () => { calls.push('end'); },
+        status: () => undefined,
+      },
+    });
+    await handleActivity(
+      { text: '', conversationId: 't1', sender: { upn: 'a@m.com' },
+        value: { action: 'pickRepo', cwd: 'C:/r/alpha', name: 'alpha' } }, d);
+    expect(calls).toEqual(['end', 'handlePrompt']);
+  });
   it('refuses a pickRepo submit whose cwd is not a scanned repo', async () => {
     const d = deps();
     let called = false;
