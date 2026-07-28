@@ -13,7 +13,7 @@ devbox does not need a permanent public inbound port for normal operation.
 
 - **Node.js** (18+ recommended) and npm on the devbox.
 - Access to Azure subscription **TestTRS01**
-  (`e0b3fc49-3365-47b8-946b-ad9adea3fdbe`, tenant `72f988bf-86f1-41af-91ab-2d7cd011db47`).
+  (``, tenant ``).
 - Permission to create an **Entra App Registration** and an **Azure Bot** resource.
 - **Teams sideloading (custom app upload)** enabled for your account.
   > ⚠️ In a corporate tenant this is frequently disabled and may require **tenant
@@ -37,12 +37,12 @@ All configuration comes from environment variables, loaded via `loadConfig()`.
 Example `.env` (never commit this file):
 
 ```dotenv
-REPO_ROOT=C:\Users\rarame\Repos
+REPO_ROOT=C:\Users\x\Repos
 MICROSOFT_APP_ID=00000000-0000-0000-0000-000000000000
 MICROSOFT_APP_PASSWORD=your-bot-secret
 ANTHROPIC_API_KEY=sk-ant-...
 DB_PATH=./sessions.db
-ALLOWED_USERS=rarame@microsoft.com,11111111-2222-3333-4444-555555555555
+ALLOWED_USERS=11111111-2222-3333-4444-555555555555
 ```
 
 > 🔒 **`ALLOWED_USERS` is mandatory.** It is the **only** thing preventing arbitrary
