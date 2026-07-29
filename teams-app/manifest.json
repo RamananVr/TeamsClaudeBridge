@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
   "manifestVersion": "1.16",
   "version": "1.0.0",
-  "id": "{{MICROSOFT_APP_ID}}",
+  "id": "85441132-48e2-4ad1-a8a5-7633f2c8a433",
   "packageName": "com.example.teamsclaudebridge",
   "developer": {
     "name": "Teams Claude Bridge",
@@ -25,7 +25,7 @@
   "accentColor": "#2A2A2A",
   "bots": [
     {
-      "botId": "{{MICROSOFT_APP_ID}}",
+      "botId": "85441132-48e2-4ad1-a8a5-7633f2c8a433",
       "scopes": [
         "personal",
         "team"
