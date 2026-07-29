@@ -69,7 +69,10 @@ export class RelayServer {
       this.onWorkerFrame(frame);
     });
     sock.on('close', () => {
-      if (this.worker === sock) this.worker = undefined;
+      if (this.worker === sock) {
+        this.worker = undefined;
+        this.failPending('Worker disconnected — the devbox dropped the connection. Try again shortly.');
+      }
     });
   }
 
@@ -131,6 +134,22 @@ export class RelayServer {
         // auth after handshake or any server→client type: ignore.
         break;
     }
+  }
+
+  /**
+   * Drain both pending maps when the worker drops, so no adapter turn hangs on
+   * an unresolved scan and no prompt silently vanishes. Prompts surface an
+   * offline notice to Teams; scans reject their awaiting caller.
+   */
+  private failPending(message: string): void {
+    for (const [, pending] of this.pendingPrompts) {
+      this.onResult(pending.conversationId, message);
+    }
+    this.pendingPrompts.clear();
+    for (const [, pending] of this.pendingScans) {
+      pending.reject(new Error(message));
+    }
+    this.pendingScans.clear();
   }
 
   private checkToken(token: string): boolean {

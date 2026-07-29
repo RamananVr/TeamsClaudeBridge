@@ -119,4 +119,21 @@ describe('RelayServer scan round-trip', () => {
     const server = new RelayServer({ secret: SECRET, onResult: vi.fn() });
     await expect(server.requestScan()).rejects.toThrow(/offline|not connected/i);
   });
+
+  it('rejects an in-flight requestScan when the worker disconnects', async () => {
+    const { server, sock } = authed();
+    const p = server.requestScan();
+    sock.emit('close');
+    await expect(p).rejects.toThrow(/offline|disconnect|not connected/i);
+  });
+});
+
+describe('RelayServer disconnect cleanup', () => {
+  it('reports a worker-offline result for an in-flight prompt when the worker disconnects', () => {
+    const { server, sock, onResult } = authed();
+    server.sendPrompt('c1', 'x');
+    onResult.mockClear();
+    sock.emit('close');
+    expect(onResult).toHaveBeenCalledWith('c1', expect.stringMatching(/offline|disconnect|not connected/i));
+  });
 });
