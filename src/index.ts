@@ -5,6 +5,7 @@ import { createAdapter } from './adapter.js';
 import { ConversationRefStore } from './conversationRefStore.js';
 import { RelayServer } from './relay/relayServer.js';
 import type { ActiveSession, BotDeps } from './bot.js';
+import { makeMessagesHandler } from './httpHandler.js';
 import { WebSocketServer } from 'ws';
 
 const config = loadContainerConfig();
@@ -37,9 +38,7 @@ deliver = sendProactive;
 
 const server = restify.createServer();
 
-server.post('/api/messages', (req, res) => {
-  adapter.process(req as any, res as any, (context) => handler.run(context));
-});
+server.post('/api/messages', makeMessagesHandler(adapter, (context) => handler.run(context)));
 
 // Outbound relay: the devbox worker dials wss://<fqdn>/relay.
 const wss = new WebSocketServer({ server: server.server, path: '/relay' });
