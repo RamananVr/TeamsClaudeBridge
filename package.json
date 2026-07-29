@@ -9,7 +9,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:worker": "node dist/worker.js",
     "dev": "node --loader ts-node/esm src/index.ts",
+    "dev:worker": "node --loader ts-node/esm src/worker.ts",
     "test": "vitest run"
   },
   "keywords": [],
