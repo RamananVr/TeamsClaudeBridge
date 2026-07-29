@@ -1,5 +1,7 @@
 import type { Repo } from '../repoScanner.js';
 
+export type { Repo } from '../repoScanner.js';
+
 export const PROTOCOL_VERSION = 1;
 
 // Client (devbox worker) → server (container)
