@@ -4,8 +4,12 @@
 # dist/worker.js (which imports claudeRunner/sessionStore and runs on the devbox).
 FROM node:20-slim AS build
 WORKDIR /app
+# better-sqlite3 is an optionalDependency, so its native build failing here (no
+# toolchain in slim) is non-fatal — npm skips it. We keep optional deps in the
+# build stage because tsc (TypeScript's native binary) needs its own optional
+# platform package (@typescript/typescript-*). The runtime stage drops both.
 COPY package.json package-lock.json* ./
-RUN npm install --omit=optional
+RUN npm install
 COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
