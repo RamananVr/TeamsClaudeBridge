@@ -38,6 +38,11 @@ deliver = sendProactive;
 
 const server = restify.createServer();
 
+// CloudAdapter.process reads req.body — without a body parser it is undefined and
+// every inbound activity is rejected 400 before auth or the handler runs.
+server.use(restify.plugins.queryParser());
+server.use(restify.plugins.bodyParser());
+
 server.post('/api/messages', makeMessagesHandler(adapter, (context) => handler.run(context)));
 
 // Outbound relay: the devbox worker dials wss://<fqdn>/relay.
