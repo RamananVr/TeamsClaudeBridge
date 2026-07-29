@@ -37,6 +37,22 @@ describe('loadContainerConfig', () => {
     expect(c.relaySecret).toBe(SECRET);
     expect(c.allowedUsers.has('a@m.com')).toBe(true);
   });
+  it('reads botbuilder PascalCase env names (as set on the container)', () => {
+    const c = loadContainerConfig({
+      ...base,
+      MicrosoftAppId: 'app-id', MicrosoftAppType: 'UserAssignedMSI', MicrosoftAppTenantId: 'tid',
+    });
+    expect(c.appId).toBe('app-id');
+    expect(c.appType).toBe('UserAssignedMSI');
+    expect(c.appTenantId).toBe('tid');
+  });
+  it('prefers PascalCase over underscore when both are set (avoids stale/wrong values)', () => {
+    const c = loadContainerConfig({
+      ...base,
+      MICROSOFT_APP_TENANT_ID: 'wrong-tenant', MicrosoftAppTenantId: 'right-tenant',
+    });
+    expect(c.appTenantId).toBe('right-tenant');
+  });
 });
 
 describe('loadWorkerConfig', () => {

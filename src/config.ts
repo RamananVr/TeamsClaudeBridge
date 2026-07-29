@@ -57,10 +57,15 @@ export interface ContainerConfig {
 export function loadContainerConfig(env: Record<string, string | undefined> = process.env): ContainerConfig {
   const allowedUsers = parseAllowedUsers(env);
   const relaySecret = requireRelaySecret(env);
+  // botbuilder's ConfigurationServiceClientCredentialFactory reads PascalCase env
+  // names (MicrosoftAppId/Type/TenantId). Prefer those so the values botbuilder
+  // itself consumes and the values we thread into the factory are the same source —
+  // otherwise appType is undefined, botbuilder falls back to the password/secret
+  // credential path, and outbound proactive sends fail with invalid_client_credential.
   return {
-    appId: env.MICROSOFT_APP_ID,
-    appType: env.MICROSOFT_APP_TYPE,
-    appTenantId: env.MICROSOFT_APP_TENANT_ID,
+    appId: env.MicrosoftAppId ?? env.MICROSOFT_APP_ID,
+    appType: env.MicrosoftAppType ?? env.MICROSOFT_APP_TYPE,
+    appTenantId: env.MicrosoftAppTenantId ?? env.MICROSOFT_APP_TENANT_ID,
     relaySecret,
     allowedUsers,
     port: Number(env.PORT ?? 3978),
