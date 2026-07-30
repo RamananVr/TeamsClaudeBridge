@@ -9,7 +9,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:worker": "node dist/worker.js",
     "dev": "node --loader ts-node/esm src/index.ts",
+    "dev:worker": "node --loader ts-node/esm src/worker.ts",
     "test": "vitest run"
   },
   "keywords": [],
@@ -18,15 +20,19 @@
   "type": "module",
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.3.215",
-    "better-sqlite3": "^12.11.1",
     "botbuilder": "^4.23.3",
     "dotenv": "^17.4.2",
-    "restify": "^11.1.0"
+    "restify": "^11.1.0",
+    "ws": "^8.21.1"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.11.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^26.1.1",
     "@types/restify": "^8.5.12",
+    "@types/ws": "^8.18.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   }

@@ -6,13 +6,17 @@ import {
   MessageFactory,
   TurnContext,
 } from 'botbuilder';
-import type { Config } from './config.js';
+import type { ContainerConfig } from './config.js';
 import { handleActivity, type BotDeps, type IncomingActivity } from './bot.js';
+import type { ConversationRefStore } from './conversationRefStore.js';
+import { truncateForTeams } from './format.js';
 import { SerialQueue } from './queue.js';
 
 export interface AdapterBundle {
   adapter: CloudAdapter;
   handler: ActivityHandler;
+  /** Deliver an async Claude reply to a conversation via proactive messaging. */
+  sendProactive: (conversationId: string, text: string) => Promise<void>;
 }
 
 /**
@@ -23,7 +27,6 @@ export interface AdapterBundle {
 function toIncoming(context: TurnContext): IncomingActivity {
   const from = context.activity.from;
   const aadObjectId = from?.aadObjectId;
-  // Teams may surface the UPN in channel-specific properties; prefer those if present.
   const upn =
     (from?.properties?.userPrincipalName as string | undefined) ??
     (from?.properties?.upn as string | undefined) ??
@@ -36,10 +39,21 @@ function toIncoming(context: TurnContext): IncomingActivity {
   };
 }
 
-export function createAdapter(config: Config, deps: BotDeps): AdapterBundle {
+/**
+ * Build the container's Bot Framework adapter. Keyless (UserAssignedMSI) auth — no
+ * password: botbuilder routes MicrosoftAppType='UserAssignedMSI' to the managed
+ * identity credential factory. Captures a ConversationReference per inbound turn so
+ * async Claude replies can be delivered later via continueConversation.
+ */
+export function createAdapter(
+  config: ContainerConfig,
+  deps: BotDeps,
+  refStore: ConversationRefStore,
+): AdapterBundle {
   const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
     MicrosoftAppId: config.appId,
-    MicrosoftAppPassword: config.appPassword,
+    MicrosoftAppType: config.appType,
+    MicrosoftAppTenantId: config.appTenantId,
   });
   const botFrameworkAuthentication = new ConfigurationBotFrameworkAuthentication(
     {},
@@ -64,13 +78,14 @@ export function createAdapter(config: Config, deps: BotDeps): AdapterBundle {
 
   handler.onMessage(async (context, next) => {
     const incoming = toIncoming(context);
-    // Audit log: every inbound message activity (no secrets).
+    // Re-capture the conversation reference every turn so a restart self-heals.
+    refStore.set(incoming.conversationId, TurnContext.getConversationReference(context.activity));
     console.log(
       `[audit] ${new Date().toISOString()} sender=${incoming.sender.aadObjectId ?? incoming.sender.upn ?? 'unknown'} conversation=${incoming.conversationId} text="${incoming.text.slice(0, 80)}"`,
     );
 
-    const replies = await queue.run(incoming.conversationId, () => handleActivity(incoming, deps));
-    for (const reply of replies) {
+    const outcome = await queue.run(incoming.conversationId, () => handleActivity(incoming, deps));
+    for (const reply of outcome.replies) {
       if ('text' in reply) {
         await context.sendActivity(MessageFactory.text(reply.text));
       } else {
@@ -80,5 +95,16 @@ export function createAdapter(config: Config, deps: BotDeps): AdapterBundle {
     await next();
   });
 
-  return { adapter, handler };
+  const sendProactive = async (conversationId: string, text: string): Promise<void> => {
+    const ref = refStore.get(conversationId);
+    if (!ref) {
+      console.error(`[sendProactive] no conversation reference for ${conversationId} — dropping reply`);
+      return;
+    }
+    await adapter.continueConversationAsync(config.appId ?? '', ref, async (context) => {
+      await context.sendActivity(MessageFactory.text(truncateForTeams(text, 60)));
+    });
+  };
+
+  return { adapter, handler, sendProactive };
 }

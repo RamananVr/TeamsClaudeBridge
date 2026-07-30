@@ -1,6 +1,6 @@
 # Project Status
 
-_Last updated: 2026-07-27_
+_Last updated: 2026-07-29_
 
 ## What this is
 
@@ -9,15 +9,23 @@ relayed to a Claude Code session running on an always-on devbox against real loc
 and Claude's replies are relayed back. **One Teams thread ↔ one Claude session**, each bound
 to a chosen local repo.
 
-Outbound model: the devbox connects out to Azure Bot Service, so no inbound port is required.
+**Split-hosting model (resolves the credential blocker):** a thin Bot Framework adapter runs
+in an Azure Container App with a User-Assigned Managed Identity (keyless bot auth — sidesteps
+the tenant's secret/cert ban). Claude Code and the real repos stay on the devbox. The devbox
+has no inbound port, so its worker dials an **outbound** WebSocket relay to the container,
+pulls prompts, runs Claude, and pushes results back; the container relays those to Teams via
+Bot Framework proactive messaging.
 
 Commands: `/repos`, `/new` (repo pick-list card), `/end`, `/status`.
 
 ## Status
 
-- **Code:** All 14 implementation tasks complete, reviewed, and committed. Build clean, 37/37 tests pass.
-- **Azure infra (Task 13/14):** **PAUSED** — no viable bot credential in the target tenant (see blocker below).
-- **End-to-end verification (Task 14):** Blocked on infra.
+- **Code:** Split-hosting relay implemented, reviewed, committed on `feat/split-hosting-relay`.
+  Build clean, all tests pass. See relay modules under `src/relay/` and `src/worker.ts`.
+- **Azure infra:** Adapter targets Container App **ca-tcb-adapter** (env cae-tcb-dev-eus2) with
+  UAMI **id-tcb-adapter-eus2** (clientId `85441132-48e2-4ad1-a8a5-7633f2c8a433`). Infra
+  reconfiguration + deploy is the remaining hard-to-reverse step.
+- **End-to-end verification (Task 14):** Pending the deploy + Teams round-trip smoke test.
 
 ## ⚠️ Security invariants (do NOT weaken)
 
