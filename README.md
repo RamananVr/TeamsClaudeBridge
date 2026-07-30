@@ -55,7 +55,7 @@ ALLOWED_USERS=11111111-2222-3333-4444-555555555555
 These are manual steps you perform in the Azure Portal and Teams.
 
 1. **Create the Azure Bot + Entra App Registration.**
-   In subscription `e0b3fc49-3365-47b8-946b-ad9adea3fdbe`, create an **Azure Bot**
+   In subscription `x`, create an **Azure Bot**
    resource with a **multi-tenant** (or single-tenant, per your policy) Entra App
    Registration. Capture the app (client) ID as `MICROSOFT_APP_ID` and generate a
    client secret as `MICROSOFT_APP_PASSWORD`. Put both in your `.env`.
